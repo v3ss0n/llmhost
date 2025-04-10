@@ -1,0 +1,120 @@
+version: '3.8'
+services:
+  litellm:
+    restart: unless-stopped
+    # image: ghcr.io/berriai/litellm:v1.59.8
+    image: litellm/litellm:v1.59.8
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    command:
+      - "--config=/app/config.yaml"
+    ports:
+      - "0.0.0.0:4000:4000" # Map the container port to the host, change the host port if necessary
+    environment:
+        LITELLM_MASTER_KEY: "sk-1234" # Your master key for the proxy server. Can use this to send /chat/completion requests etc
+        LITELLM_SALT_KEY: "sk-XXXXXXXX" # Can NOT CHANGE THIS ONCE SET - It is used to encrypt/decrypt credentials stored in DB. If value of 'LITELLM_SALT_KEY' changes your models cannot be retrieved from DB
+        DATABASE_URL: "postgresql://llmproxy:dbpassword9090@db:5432/litellm"
+        STORE_MODEL_IN_DB: "True" # allows adding models to proxy via UI
+    env_file:
+      - .env # Load local .env file
+    networks:
+      - llmhost
+ 
+  db:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: litellm
+      POSTGRES_USER: llmproxy
+      POSTGRES_PASSWORD: dbpassword9090
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d litellm -U llmproxy"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - pg_data:/var/lib/postgresql
+    networks:
+      - llmhost
+  inference:
+    image: ghcr.io/huggingface/text-generation-inference:latest
+    environment:
+      # - HF_TOKEN=
+      # - MODEL_ID=Qwen/Qwen2.5-Coder-7B-Instruct-AWQ
+      # - MODEL_ID=Qwen/QwQ-32B-AWQ
+      # - MODEL_ID=RekaAI/reka-flash-3
+      # - MODEL_ID=mistralai/Mistral-Small-3.1-24B-Instruct-2503
+      # - MODEL_ID=mistralai/Mistral-Small-24B-Instruct-2501
+      # - MODEL_ID=unsloth/QwQ-32B-unsloth-bnb-4bit
+      # - QUANTIZED=bitsandbytes-fp4
+      # - MODEL_ID=Qwen/Qwen2.5-Coder-32B-Instruct-AWQ
+      # - MODEL_ID=avoroshilov/DeepSeek-R1-Distill-Qwen-32B-GPTQ_4bit-128g
+      # - MODEL_ID=Valdemardi/DeepSeek-R1-Distill-Qwen-32B-AWQ
+      # - MODEL_ID=Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int4
+      # - MODEL_ID=unsloth/Qwen2.5-Coder-32B-bnb-4bit
+      # - QUANTIZED=bitsandbytes
+      # - MODEL_ID=unsloth/Mistral-Small-24B-Instruct-2501-unsloth-bnb-4bit
+      # - MODEL_ID=unsloth/DeepSeek-R1-Distill-Llama-8B-unsloth-bnb-4bit
+      # - SHARDED=true
+      # - SHARDS=2
+    ports:
+      - "0.0.0.0:8099:80"
+    restart: "unless-stopped"
+    command: "--model-id Qwen/Qwen2.5-Coder-32B-Instruct-AWQ --sharded true --num-shard 2 --kv-cache-dtype fp8_e4m3fn"
+    # command: "--model-id Qwen/QwQ-32B-AWQ --sharded true --num-shard 2 --kv-cache-dtype fp8_e4m3fn"
+    # command: "--model-id mistralai/Mistral-Small-24B-Instruct-2501 --sharded true --num-shard 2 --quantize bitsandbytes-nf4 "
+    # command: "--model-id mistralai/Mistral-Small-3.1-24B-Instruct-2503 --sharded true --num-shard 2"
+    # command: "--model-id OPEA/Mistral-Small-3.1-24B-Instruct-2503-int4-AutoRound-awq-sym --sharded true --num-shard 2"
+    # command: "--model-id RekaAI/reka-flash-3 --sharded true --num-shard 2 --quantize bitsandbytes-nf4"
+    # command: "--model-id ISTA-DASLab/Mistral-Small-3.1-24B-Instruct-2503-GPTQ-4b-128g --sharded true --num-shard 2"
+    # command: "--model-id mistralai/Mistral-Small-3.1-24B-Instruct-2503 --sharded true --num-shard 2"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0', '1']
+              capabilities: [gpu]
+    shm_size: '90g'
+    volumes:
+      - ~/.hf-docker-data:/data
+    networks:
+      - llmhost
+
+  anythingllm:
+    image: mintplexlabs/anythingllm
+    ports:
+    - "3001:3001"
+    cap_add:
+      - SYS_ADMIN
+    environment:
+    # Adjust for your environment
+      - STORAGE_DIR=/app/server/storage
+      - DISABLE_TELEMETRY=true
+      - JWT_SECRET="a-complex-secret-key-1234567890abcdefGHIJKLmnopqrstuvwxyz!@#$%^&*()"
+      - VECTOR_DB=lancedb
+      - WHISPER_PROVIDER=local
+      - TTS_PROVIDER=native
+      - PASSWORDMINCHAR=8
+      - LLM_PROVIDER='generic-openai'
+      # - GENERIC_OPEN_AI_BASE_PATH=http://text-generation-inference/v1
+      - GENERIC_OPEN_AI_BASE_PATH=http://litellm:4000/v1
+      - GENERIC_OPEN_AI_MODEL_PREF=default
+      - GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=32000
+      - GENERIC_OPEN_AI_API_KEY=sk-1234
+    volumes:
+      - anythingllm_storage:/app/server/storage
+    restart: unless-stopped
+    networks:
+      - llmhost
+
+volumes:
+  anythingllm_storage:
+    # external: true
+  pg_data:
+    # external: true
+  pgdata2:
+
+networks:
+  llmhost:
+    driver: bridge

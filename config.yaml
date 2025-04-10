@@ -1,0 +1,73 @@
+model_list:
+  - model_name: default
+    litellm_params:
+      model: openai/mistralai/Mistral-Small-24B-Instruct-2501
+      api_key: "sk-1234"
+      api_base: "http://inference/v1"
+    model_info:
+      supports_function_calling: true
+  # - model_name: default
+  #   litellm_params:
+  #     model: openai/Qwen/QwQ-32B-AWQ
+  #     api_key: "sk-1234"
+  #     api_base: "http://sglang:30000/v1"
+  #   model_info:
+  #     supports_function_calling: true
+  # - model_name: default
+  #   litellm_params:
+  #     model: openai/Qwen/Qwen2.5-Coder-32B-Instruct-AWQ
+  #     api_key: "sk-1234"
+  #     api_base: "http://text-generation-inference/v1"
+  #   model_info:
+  #     supports_function_calling: true
+  # - model_name: default
+  #   litellm_params:
+  #     model: openai/unsloth/Qwen2.5-Coder-32B-bnb-4bit
+  #     api_key: "sk-1234"
+  #     api_base: "http://text-generation-inference/v1"
+  #   model_info:
+  #     supports_function_calling: true
+  # - model_name: default
+  #   litellm_params:
+  #     model: openai/unsloth/Mistral-Small-24B-Instruct-2501-bnb-4bit
+  #     api_key: "sk-1234"
+  #     api_base: "http://text-generation-inference/v1"
+  #   model_info:
+  #     supports_function_calling: true
+  # - model_name: deepseek-r1
+  #   litellm_params:
+  #     model: openai/Qwen/Qwen2.5-Coder-32B-Instruct-AWQ
+  #     api_key: "sk-1234"
+  #     api_base: "http://text-generation-inference/v1"
+  #   model_info:
+  #     supports_function_calling: true
+# model_list:
+#   - model_name: default
+#     litellm_params:
+#       model: openai/hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4
+#       api_base: "http://44.197.192.102:8099/v1"
+#       api_key: "sk-1234"
+#     model_info:
+#       supports_function_calling: true
+#   - model_name: default
+#     litellm_params:
+#       model: openai/hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4
+#       api_base: "http://44.197.249.1:8099/v1"
+#       api_key: "sk-1234"
+#     model_info:
+#       supports_function_calling: true
+# model_list:
+#   - model_name: default
+#     litellm_params:
+#       model: openai/mistralai/Mistral-Small-24B-Instruct-2501
+#       api_base: "http://172.31.64.211:8099/v1"
+#       api_key: "sk-1234"
+#     model_info:
+#       supports_function_calling: true
+#   - model_name: default
+#     litellm_params:
+#       model: openai/mistralai/Mistral-Small-24B-Instruct-2501
+#       api_base: "http://172.31.77.222:8099/v1"
+#       api_key: "sk-1234"
+#     model_info:
+#       supports_function_calling: true

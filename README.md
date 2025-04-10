@@ -26,13 +26,9 @@ graph TD;
    - Each instance runs inference services for LLM models.
    - 3 EC2-12xlarge instances for running inference.
 
-3. **k6 Load Testing**:
-   - Uses `common.js` and `long.js` scripts for load testing.
-   - Sends metrics to Kibana for visualization.
-
-4. **Kibana Visualization**:
-   - Visualizes the load testing results.
-   - Provides dashboards and metrics for monitoring.
+3. **AnythingLLM for Chatbot UI**:
+   - Chatbot with various tool calling support
+   - Easy and fast.
 
 ## Configuration
 
@@ -47,27 +43,3 @@ graph TD;
 - **Docker Compose Configuration**:
   - Update `docker-compose.yml` to ensure the inference servers are configured correctly.
   - Ensure the inference service is properly configured to run on the EC2-12xlarge instances.
-
-### k6 Load Testing
-
-- **Scripts**:
-  - Review and modify `common.js` and `long.js` as necessary.
-  - Ensure the scripts are configured to send metrics to Kibana.
-
-### Kibana Visualization
-
-- **Dashboards**:
-  - Create Kibana dashboards to visualize the load testing results.
-  - Define specific metrics and visualizations based on the user's requirements.
-
-## Steps
-
-- Launch the required EC2 instances.
-- Configure the networking settings.
-- Configure `config.yaml` to load balance according to available network settings.
-- Test setup using k6
-  ```sh
-  MODEL_ID="Qwen/Qwen2.5-Coder-32B-Instruct-AWQ" HOST=localhost:8080 k6 run --duration=600 long.js
-  MODEL_ID="Qwen/Qwen2.5-Coder-32B-Instruct-AWQ" HOST=localhost:8080 k6 run --duration=600 common.js
-  ```
-- Setup Kibana and Integrate with k6 for visualization

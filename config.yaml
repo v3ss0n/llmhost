@@ -1,7 +1,7 @@
 model_list:
   - model_name: default
     litellm_params:
-      model: openai/mistralai/Mistral-Small-24B-Instruct-2501
+      model: openai/Qwen/Qwen3-32B-AWQ
       api_key: "sk-1234"
       api_base: "http://inference/v1"
     model_info:

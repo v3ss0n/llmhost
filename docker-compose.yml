@@ -3,7 +3,7 @@ services:
   litellm:
     restart: unless-stopped
     # image: ghcr.io/berriai/litellm:v1.59.8
-    image: litellm/litellm:v1.59.8
+    image: litellm/litellm:latest
     volumes:
       - ./config.yaml:/app/config.yaml
     command:
@@ -36,38 +36,46 @@ services:
       - pg_data:/var/lib/postgresql
     networks:
       - llmhost
+  # inference:
+  #   image: ghcr.io/huggingface/text-generation-inference:latest
+  #   ports:
+  #     - "0.0.0.0:8099:80"
+  #   restart: "unless-stopped"
+  #   # command: "--model-id Qwen/Qwen2.5-Coder-32B-Instruct-AWQ --sharded true --num-shard 2 --kv-cache-dtype fp8_e4m3fn"
+  #   command: "--model-id Qwen/QwQ-32B-AWQ --sharded true --num-shard 2 --kv-cache-dtype fp8_e4m3fn"
+  #   # command: "--model-id mistralai/Mistral-Small-24B-Instruct-2501 --sharded true --num-shard 2 --quantize bitsandbytes-nf4 "
+  #   # command: "--model-id mistralai/Mistral-Small-3.1-24B-Instruct-2503 --sharded true --num-shard 2"
+  #   # command: "--model-id OPEA/Mistral-Small-3.1-24B-Instruct-2503-int4-AutoRound-awq-sym --sharded true --num-shard 2"
+  #   # command: "--model-id RekaAI/reka-flash-3 --sharded true --num-shard 2 --quantize bitsandbytes-nf4"
+  #   # command: "--model-id ISTA-DASLab/Mistral-Small-3.1-24B-Instruct-2503-GPTQ-4b-128g --sharded true --num-shard 2"
+  #   # command: "--model-id mistralai/Mistral-Small-3.1-24B-Instruct-2503 --sharded true --num-shard 2"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             device_ids: ['0', '1']
+  #             capabilities: [gpu]
+  #   shm_size: '90g'
+  #   volumes:
+  #     - ~/.hf-docker-data:/data
+  #   networks:
+  #     - llmhost
   inference:
-    image: ghcr.io/huggingface/text-generation-inference:latest
-    environment:
-      # - HF_TOKEN=
-      # - MODEL_ID=Qwen/Qwen2.5-Coder-7B-Instruct-AWQ
-      # - MODEL_ID=Qwen/QwQ-32B-AWQ
-      # - MODEL_ID=RekaAI/reka-flash-3
-      # - MODEL_ID=mistralai/Mistral-Small-3.1-24B-Instruct-2503
-      # - MODEL_ID=mistralai/Mistral-Small-24B-Instruct-2501
-      # - MODEL_ID=unsloth/QwQ-32B-unsloth-bnb-4bit
-      # - QUANTIZED=bitsandbytes-fp4
-      # - MODEL_ID=Qwen/Qwen2.5-Coder-32B-Instruct-AWQ
-      # - MODEL_ID=avoroshilov/DeepSeek-R1-Distill-Qwen-32B-GPTQ_4bit-128g
-      # - MODEL_ID=Valdemardi/DeepSeek-R1-Distill-Qwen-32B-AWQ
-      # - MODEL_ID=Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int4
-      # - MODEL_ID=unsloth/Qwen2.5-Coder-32B-bnb-4bit
-      # - QUANTIZED=bitsandbytes
-      # - MODEL_ID=unsloth/Mistral-Small-24B-Instruct-2501-unsloth-bnb-4bit
-      # - MODEL_ID=unsloth/DeepSeek-R1-Distill-Llama-8B-unsloth-bnb-4bit
-      # - SHARDED=true
-      # - SHARDS=2
+    image: vllm/vllm-openai:latest
+    # command: --model Qwen/Qwen3-30B-A3B-fp8  --port 80  --tensor-parallel-size 2 --kv-cache-dtype fp8
+    # command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2 --kv-cache-dtype fp8_e5m2
+    command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2 --kv-cache-dtype fp8_e5m2
     ports:
       - "0.0.0.0:8099:80"
-    restart: "unless-stopped"
-    command: "--model-id Qwen/Qwen2.5-Coder-32B-Instruct-AWQ --sharded true --num-shard 2 --kv-cache-dtype fp8_e4m3fn"
-    # command: "--model-id Qwen/QwQ-32B-AWQ --sharded true --num-shard 2 --kv-cache-dtype fp8_e4m3fn"
-    # command: "--model-id mistralai/Mistral-Small-24B-Instruct-2501 --sharded true --num-shard 2 --quantize bitsandbytes-nf4 "
-    # command: "--model-id mistralai/Mistral-Small-3.1-24B-Instruct-2503 --sharded true --num-shard 2"
-    # command: "--model-id OPEA/Mistral-Small-3.1-24B-Instruct-2503-int4-AutoRound-awq-sym --sharded true --num-shard 2"
-    # command: "--model-id RekaAI/reka-flash-3 --sharded true --num-shard 2 --quantize bitsandbytes-nf4"
-    # command: "--model-id ISTA-DASLab/Mistral-Small-3.1-24B-Instruct-2503-GPTQ-4b-128g --sharded true --num-shard 2"
-    # command: "--model-id mistralai/Mistral-Small-3.1-24B-Instruct-2503 --sharded true --num-shard 2"
+    volumes:
+      - ~/.hf-docker-data:/root/.cache/huggingface
+    networks:
+      - llmhost
+    environment:
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN}
+    env_file:
+      - .env
     deploy:
       resources:
         reservations:
@@ -76,10 +84,7 @@ services:
               device_ids: ['0', '1']
               capabilities: [gpu]
     shm_size: '90g'
-    volumes:
-      - ~/.hf-docker-data:/data
-    networks:
-      - llmhost
+    ipc: host
 
   anythingllm:
     image: mintplexlabs/anythingllm

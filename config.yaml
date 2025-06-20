@@ -1,7 +1,21 @@
 model_list:
-  - model_name: default
+  - model_name: Qwen3-32B-AWQ
     litellm_params:
       model: openai/Qwen/Qwen3-32B-AWQ
+      api_key: "sk-1234"
+      api_base: "http://inference/v1"
+    model_info:
+      supports_function_calling: true
+  - model_name: Qwen3-14B
+    litellm_params:
+      model: openai/Qwen/Qwen3-14B
+      api_key: "sk-1234"
+      api_base: "http://inference/v1"
+    model_info:
+      supports_function_calling: true
+  - model_name: default
+    litellm_params:
+      model: openai/Qwen/Qwen3-14B
       api_key: "sk-1234"
       api_base: "http://inference/v1"
     model_info:
@@ -34,8 +48,7 @@ model_list:
   #     api_base: "http://text-generation-inference/v1"
   #   model_info:
   #     supports_function_calling: true
-  # - model_name: deepseek-r1
-  #   litellm_params:
+  
   #     model: openai/Qwen/Qwen2.5-Coder-32B-Instruct-AWQ
   #     api_key: "sk-1234"
   #     api_base: "http://text-generation-inference/v1"
@@ -71,3 +84,5 @@ model_list:
 #       api_key: "sk-1234"
 #     model_info:
 #       supports_function_calling: true
+router_settings:
+  fallbacks: [{"default": ["Qwen3-32B-AWQ"]}]

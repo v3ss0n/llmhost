@@ -11,7 +11,7 @@ services:
     ports:
       - "0.0.0.0:4000:4000" # Map the container port to the host, change the host port if necessary
     environment:
-        LITELLM_MASTER_KEY: "sk-1234" # Your master key for the proxy server. Can use this to send /chat/completion requests etc
+        LITELLM_MASTER_KEY: "sk-0xc0d3admin" # Your master key for the proxy server. Can use this to send /chat/completion requests etc
         LITELLM_SALT_KEY: "sk-XXXXXXXX" # Can NOT CHANGE THIS ONCE SET - It is used to encrypt/decrypt credentials stored in DB. If value of 'LITELLM_SALT_KEY' changes your models cannot be retrieved from DB
         DATABASE_URL: "postgresql://llmproxy:dbpassword9090@db:5432/litellm"
         STORE_MODEL_IN_DB: "True" # allows adding models to proxy via UI
@@ -63,9 +63,12 @@ services:
   #     - llmhost
   inference:
     image: vllm/vllm-openai:latest
-    # command: --model Qwen/Qwen3-30B-A3B-fp8  --port 80  --tensor-parallel-size 2 --kv-cache-dtype fp8
+
+    # command: --model Qwen/Qwen3-30B-A3B-fp8  --quantization fp8 --port 80  --enable-prefix-caching --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes --enable-expert-parallel --enforce-eager
     # command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2 --kv-cache-dtype fp8_e5m2
-    command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2 --kv-cache-dtype fp8_e5m2
+    command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2  --enable-prefix-caching --kv-cache-dtype fp8_e4m3 --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes 
+    # command: --model Qwen/Qwen3-14B --port 80  --tensor-parallel-size 2 --quantization="fp8" --kv-cache-dtype fp8_e4m3  --enable-prefix-caching --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes
+    # command: --model Qwen/Qwen3-30B --port 80  --tensor-parallel-size 2 --quantization="fp8" --kv-cache-dtype fp8_e4m3  --enable-prefix-caching --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes
     ports:
       - "0.0.0.0:8099:80"
     volumes:
@@ -73,6 +76,7 @@ services:
     networks:
       - llmhost
     environment:
+      VLLM_ALLOW_LONG_MAX_MODEL_LEN: 1
       HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN}
     env_file:
       - .env
@@ -101,11 +105,11 @@ services:
       - WHISPER_PROVIDER=local
       - TTS_PROVIDER=native
       - PASSWORDMINCHAR=8
-      - LLM_PROVIDER='generic-openai'
+      - LLM_PROVIDER=generic-openai
       # - GENERIC_OPEN_AI_BASE_PATH=http://text-generation-inference/v1
       - GENERIC_OPEN_AI_BASE_PATH=http://litellm:4000/v1
       - GENERIC_OPEN_AI_MODEL_PREF=default
-      - GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=32000
+      - GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=128000
       - GENERIC_OPEN_AI_API_KEY=sk-1234
     volumes:
       - anythingllm_storage:/app/server/storage

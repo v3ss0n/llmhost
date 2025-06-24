@@ -1,0 +1,6 @@
+models:
+  "qwen2.5":
+    cmd: |
+      /path/to/llama-server
+      -hf bartowski/Qwen2.5-0.5B-Instruct-GGUF:Q4_K_M
+      --port ${PORT}

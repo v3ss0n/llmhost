@@ -61,13 +61,20 @@ services:
   #     - ~/.hf-docker-data:/data
   #   networks:
   #     - llmhost
+  # llamaswap:
+  #   image: ghcr.io/mostlygeek/llama-swap:cpu # Or cuda, intel, vulkan
+  #   environment:
+  #     - LLAMASWAP_TARGET_URL=http://llama_cpp_server:8080 # Point to llama.cpp service
+  #     # Add other llamaswap configuration variables as needed
+  #   volumes:
+  #     - ./swap_config.yaml:/app/config.yaml
   inference:
     image: vllm/vllm-openai:latest
 
     # command: --model Qwen/Qwen3-30B-A3B-fp8  --quantization fp8 --port 80  --enable-prefix-caching --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes --enable-expert-parallel --enforce-eager
     # command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2 --kv-cache-dtype fp8_e5m2
-    command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2  --enable-prefix-caching --kv-cache-dtype fp8_e4m3 --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes 
-    # command: --model Qwen/Qwen3-14B --port 80  --tensor-parallel-size 2 --quantization="fp8" --kv-cache-dtype fp8_e4m3  --enable-prefix-caching --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes
+    # command: --model Qwen/Qwen3-32B-AWQ --port 80  --tensor-parallel-size 2  --enable-prefix-caching --kv-cache-dtype fp8_e4m3 --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes 
+    command: --model Qwen/Qwen3-14B --port 80  --tensor-parallel-size 2 --quantization="fp8"  --kv-cache-dtype fp8_e4m3 --enable-prefix-caching --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes
     # command: --model Qwen/Qwen3-30B --port 80  --tensor-parallel-size 2 --quantization="fp8" --kv-cache-dtype fp8_e4m3  --enable-prefix-caching --reasoning-parser qwen3  --enable-auto-tool-choice --tool-call-parser hermes
     ports:
       - "0.0.0.0:8099:80"
@@ -110,7 +117,7 @@ services:
       - GENERIC_OPEN_AI_BASE_PATH=http://litellm:4000/v1
       - GENERIC_OPEN_AI_MODEL_PREF=default
       - GENERIC_OPEN_AI_MODEL_TOKEN_LIMIT=128000
-      - GENERIC_OPEN_AI_API_KEY=sk-1234
+      - GENERIC_OPEN_AI_API_KEY=sk-0xc0d3admin
     volumes:
       - anythingllm_storage:/app/server/storage
     restart: unless-stopped
